@@ -19,8 +19,12 @@ namespace GlowingReputation
 
         public void Start()
         {
-            GameEvents.onPartDestroyed.Add(new EventData<Part>.OnEvent(OnPartDestroyed));
+            if (HighLogic.LoadedSceneIsFlight)
+            {
+                GameEvents.onPartDestroyed.Add(new EventData<Part>.OnEvent(OnPartDestroyed));
+            }
         }
+        
 
         public void Update()
         {
@@ -30,9 +34,16 @@ namespace GlowingReputation
             }
         }
 
+        public void OnDestroy()
+        {
+            GameEvents.onPartDestroyed.Remove(new EventData<Part>.OnEvent(OnPartDestroyed));
+        }
+
         protected void OnPartDestroyed(Part p)
         {
-            
+            float repLoss = Utils.GetReputationScale(p.vessel.mainBody, 
+                Vector3.Distance(p.vessel.mainBody.position, p.partTransform.position) - p.vessel.mainBody.Radius) * BaseReputationHit;
+            Reputation.Instance.AddReputation(repLoss, TransactionReasons.VesselLoss);
         }
 
         protected void EvaluateSafety()
