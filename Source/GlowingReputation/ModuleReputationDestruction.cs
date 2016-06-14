@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,7 +24,7 @@ namespace GlowingReputation
                 GameEvents.onPartDestroyed.Add(new EventData<Part>.OnEvent(OnPartDestroyed));
             }
         }
-        
+
 
         public void Update()
         {
@@ -41,16 +41,36 @@ namespace GlowingReputation
 
         protected void OnPartDestroyed(Part p)
         {
-            float repLoss = Utils.GetReputationScale(p.vessel.mainBody, 
+            if (SafeUntilFirstActivation && !Unsafe)
+              return;
+
+            float repLoss = Utils.GetReputationScale(p.vessel.mainBody,
                 Vector3.Distance(p.vessel.mainBody.position, p.partTransform.position) - p.vessel.mainBody.Radius) * BaseReputationHit;
             Reputation.Instance.AddReputation(repLoss, TransactionReasons.VesselLoss);
         }
 
         protected void EvaluateSafety()
         {
-            // check this for all potential conditions
-            // ModuleResourceConverter
-            // ModuleEnginesFX
+            // ModuleResourceConverter (ie fission reactor)
+            ModuleResourceConverter converter = this.GetComponent<ModuleResourceConverter>();
+            List<ModuleEnginesFX> engines = this.GetComponents<ModuleEnginesFX>();
+
+            if (converter != null)
+            {
+              if (converter.ModuleIsActive())
+              {
+                Unsafe = true;
+              }
+            }
+
+            // ModuleEnginesFX (ie nuclear engine)
+            foreach (ModuleEnginesFX engine in engines)
+            {
+              if (!engine.Shutdown())
+              {
+                Usafe = true;
+              }
+            }
         }
     }
 }
