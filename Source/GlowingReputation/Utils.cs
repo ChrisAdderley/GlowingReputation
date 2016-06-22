@@ -13,7 +13,12 @@ namespace GlowingReputation
       public static float GetReputationScale(CelestialBody body, double altitude)
       {
           // if planet not in DB, no reputation penalty
-          if (!GlowingReputationSettings.ReputationData.ContainsKey(body.name))
+          if (GlowingReputationSettings.ReputationData == null)
+          {
+              Utils.LogWarning("Could not locate the reputation data");
+              return 0f;
+          }
+          else if(!GlowingReputationSettings.ReputationData.ContainsKey(body.name))
           {
               return 0f;
           }
@@ -73,6 +78,28 @@ namespace GlowingReputation
         }
         return defaultValue;
     }
+      // Based on some Firespitter code by Snjo
+    public static FloatCurve GetValue(ConfigNode node, string nodeID, FloatCurve defaultValue)
+    {
+        if (node.HasValue(nodeID))
+        {
+            FloatCurve theCurve = new FloatCurve();
+            ConfigNode[] nodes = node.GetNodes(nodeID);
+            for (int i = 0; i < nodes.Length; i++)
+            {
+                string[] valueArray = nodes[i].GetValues("key");
+            
+                for (int l = 0; l < valueArray.Length; l++)
+                {
+                    string[] splitString = valueArray[l].Split(' ');
+                    Vector2 v2 = new Vector2(float.Parse(splitString[0]), float.Parse(splitString[1]));
+                    theCurve.Add(v2.x, v2.y, 0, 0);
+                }
+            }
+            return theCurve;
+        }
+        return defaultValue;
+    }
 
     public static void Log(string str)
     {
@@ -89,23 +116,5 @@ namespace GlowingReputation
 
 
   }
-
-  //<NathanKell> take the bounding box of the dragcube
-  //[13:54] <NathanKell> (the product of the final triplet in a DRAG_CUBE entry)
-//[13:55] <NathanKell> Then multiply by the Y area divided by the X*Z dimensions
-//[13:55] <NathanKell> (i.e. how much of the Y-facing area of the rectangle is in fact the part)
-//[13:55] NathanKell> Then take the minimum of (the X and Z portions) , then add 2 * (x portion * zPortion), then divide by 3.
-//13:56] <NathanKell> that is the final multiplier
-//[13:56] <NathanKell> in effect we're figuring out, from projects from three axes, how much of the cube is hollow and how much is filled with th part
-//[13:56] <NathanKell> the8
-// [13:56] <NathanKell> the**
-// size = Nertea: part.DragCubes.WeightedSize
-//displacement = cube * xzPortion * yPortion
-//where yPortion = yPortion = areas[2] / (size.x * size.z); and
-//xPortion = areas[0] / (size.y * size.z)?
-//zPortion = areas[1] / (size.y * size.x)?
-//and xPortion and zPortion are calculated like yPortion
-//[13:59] <NathanKell> (areas is a a float[6] from dragcubes.WeightedArea[] )z)
-// xzPortion = (Math.Min(xPortion, zPortion) + 2d * (xPortion * zPortion)) * (1d / 3d);
 
 }

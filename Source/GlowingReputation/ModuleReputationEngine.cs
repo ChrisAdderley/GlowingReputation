@@ -16,16 +16,16 @@ namespace GlowingReputation
         [KSPField(isPersistant = false)]
         public string EngineID;
 
-        private ModuleEnginesFX engineFX
+        private ModuleEnginesFX engineFX;
 
         public void Start()
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
               // Get engines
-                foreach (ModuleEnginesFX fx in this.part.GetComponents<ModuleEnginesFX>)
+                foreach (ModuleEnginesFX fx in this.part.GetComponents<ModuleEnginesFX>())
                 {
-                  if (fx.EngineID == EngineID)
+                  if (fx.engineID == EngineID)
                     engineFX = fx;
                 }
             }
@@ -34,7 +34,7 @@ namespace GlowingReputation
 
         public void FixedUpdate()
         {
-            if (engineFX != null && !engineFX.Shutdown())
+            if (engineFX != null && engineFX.EngineIgnited)
             {
                 LoseReputation();
             }

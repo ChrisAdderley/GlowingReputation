@@ -5,7 +5,7 @@ using System.Text;
 
 namespace GlowingReputation
 {
-    class BodyReputationData
+    public class BodyReputationData
     {
         public string bodyName;
         public FloatCurve bodyRepCurve;

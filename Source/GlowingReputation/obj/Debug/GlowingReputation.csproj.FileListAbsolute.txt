@@ -1,0 +1,5 @@
+G:\KSP Modding\repositories\GlowingReputation\GameData\GlowingReputation\Plugins\GlowingReputation.dll
+G:\KSP Modding\repositories\GlowingReputation\GameData\GlowingReputation\Plugins\GlowingReputation.pdb
+G:\KSP Modding\repositories\GlowingReputation\Source\GlowingReputation\obj\Debug\GlowingReputation.dll
+G:\KSP Modding\repositories\GlowingReputation\Source\GlowingReputation\obj\Debug\GlowingReputation.pdb
+G:\KSP Modding\repositories\GlowingReputation\Source\GlowingReputation\obj\Debug\GlowingReputation.csprojResolveAssemblyReference.cache
