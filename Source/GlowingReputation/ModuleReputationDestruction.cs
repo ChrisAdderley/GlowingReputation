@@ -10,10 +10,14 @@ namespace GlowingReputation
     public class ModuleReputationDestruction:PartModule
     {
         [KSPField(isPersistant = false)]
-        public bool SafeUntilFirstActivation;
+        public bool SafeUntilFirstActivation = false;
 
         [KSPField(isPersistant = false)]
         public float BaseReputationHit = 15f;
+
+        // Reputation Status string
+        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "Rep. Status")]
+        public string ReputationStatus = "Safe";
 
         [KSPField(isPersistant = true)]
         public bool Unsafe = true;
@@ -25,11 +29,16 @@ namespace GlowingReputation
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                if (SafeUntilFirstActivation)
+                if (!Unsafe && SafeUntilFirstActivation)
                     Unsafe = false;
+                else
+                  Unsafe = true;
+
                 converter = this.GetComponent<ModuleResourceConverter>();
                 engines = this.GetComponents<ModuleEnginesFX>();
                 GameEvents.onPartExplode.Add(new EventData<GameEvents.ExplosionReaction>.OnEvent(OnPartDestroyed));
+                if (!Unsafe)
+                  ReputationStatus = "Safe";
             }
         }
 
@@ -39,6 +48,12 @@ namespace GlowingReputation
             if (SafeUntilFirstActivation && !Unsafe)
             {
                 EvaluateSafety();
+            }
+            if (!SafeUntilFirstActivation || (SafeUntilFirstActivation && Unsafe))
+            {
+              float repScale = Utils.GetReputationScale(this.part.vessel.mainBody,
+                  Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
+                  ReputationStatus =  String.Format("{0:F2} when lost",repScale * BaseReputationHit);
             }
         }
 
@@ -73,6 +88,7 @@ namespace GlowingReputation
               {
                 Unsafe = true;
                 Utils.Log("This part is now unsafe!");
+
               }
             }
 

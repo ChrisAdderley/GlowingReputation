@@ -13,6 +13,10 @@ namespace GlowingReputation
         [KSPField(isPersistant = false)]
         public float BaseReputationHit = 1f;
 
+        // Reputation Status string
+        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "Rep. Status")]
+        public string ReputationStatus = "";
+
         [KSPField(isPersistant = false)]
         public string EngineID;
 
@@ -31,13 +35,37 @@ namespace GlowingReputation
             }
         }
 
+        public string GetModuleTitle()
+        {
+            return "Reputation Damaging Engine";
+        }
+        public override string GetInfo()
+        {
+            string outStr = String.Format("Running in sensitive environments damages reputation at a rate of {0}/s at maximum thrust", BaseReputationHit);
+
+            return outStr;
+        }
 
         public void FixedUpdate()
         {
-            if (engineFX != null && engineFX.EngineIgnited)
+           if (HighLogic.LoadedSceneIsFlight)
+           {
+
+            if (engineFX != null )
             {
+              if (engineFX.EngineIgnited && engineFX.reqestedThrottle > 0f)
+              {
                 LoseReputation();
+              } else
+              {
+                ReputationStatus = String.Format("Max Loss {0:F3}/s",Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude * BaseReputationHit));
+              }
+
+
+
+
             }
+          }
         }
 
 
@@ -46,8 +74,8 @@ namespace GlowingReputation
         {
             float repLoss = Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit *
               (engineFX.requestedMassFlow/engineFX.maxFuelFlow);
-
-            Reputation.Instance.AddReputation(repLoss, TransactionReasons.VesselLoss);
+              ReputationStatus = String.Format("Losing {0:F3}/s", repLoss);
+            Reputation.Instance.AddReputation(repLoss*TimeWarp.fixedDeltaTime, TransactionReasons.VesselLoss);
         }
 
 
