@@ -86,7 +86,8 @@ namespace GlowingReputation
 
             Utils.Log(String.Format("Destruction resulted in a loss of {0} reputation, scaled from {1} by {2}%", repLoss, BaseReputationHit, repScale*100f));
 
-            Reputation.Instance.AddReputation(repLoss, TransactionReasons.VesselLoss);
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+                Reputation.Instance.AddReputation(repLoss, TransactionReasons.VesselLoss);
         }
 
         protected void EvaluateSafety()

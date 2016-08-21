@@ -82,8 +82,8 @@ namespace GlowingReputation
               (engineFX.requestedMassFlow/engineFX.maxFuelFlow);
             
             ReputationStatus = String.Format("{0:F3}/s", repLoss);
-
-            Reputation.Instance.AddReputation(-repLoss*TimeWarp.fixedDeltaTime, TransactionReasons.None);
+            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
+                Reputation.Instance.AddReputation(-repLoss*TimeWarp.fixedDeltaTime, TransactionReasons.None);
         }
 
 
