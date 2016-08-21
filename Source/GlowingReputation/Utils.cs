@@ -18,13 +18,14 @@ namespace GlowingReputation
               Utils.LogWarning("Could not locate the reputation data");
               return 0f;
           }
-          else if(!GlowingReputationSettings.ReputationData.ContainsKey(body.name))
+          else if(!GlowingReputationSettings.ReputationData.ContainsKey(body.bodyName))
           {
               return 0f;
           }
           else
           {
-              return GlowingReputationSettings.ReputationData[body.name].GetReputationScale(altitude);
+              //Debug.Log("x");
+              return GlowingReputationSettings.ReputationData[body.bodyName].GetReputationScale(altitude);
           }
       }
 
@@ -81,7 +82,7 @@ namespace GlowingReputation
       // Based on some Firespitter code by Snjo
     public static FloatCurve GetValue(ConfigNode node, string nodeID, FloatCurve defaultValue)
     {
-        if (node.HasValue(nodeID))
+        if (node.HasNode(nodeID))
         {
             FloatCurve theCurve = new FloatCurve();
             ConfigNode[] nodes = node.GetNodes(nodeID);
@@ -96,8 +97,10 @@ namespace GlowingReputation
                     theCurve.Add(v2.x, v2.y, 0, 0);
                 }
             }
+            Debug.Log(theCurve.Evaluate(0f));
             return theCurve;
         }
+        Debug.Log("default");
         return defaultValue;
     }
 

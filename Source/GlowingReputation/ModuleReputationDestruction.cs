@@ -42,6 +42,16 @@ namespace GlowingReputation
             }
         }
 
+        public string GetModuleTitle()
+        {
+            return "Reputation Damaging Part";
+        }
+        public override string GetInfo()
+        {
+            string outStr = String.Format("Destroying this part damages reputation. \n\n<b>Max loss</b>: {0:F2} Rep", BaseReputationHit);
+
+            return outStr;
+        }
 
         public void Update()
         {

@@ -14,7 +14,7 @@ namespace GlowingReputation
         public float BaseReputationHit = 1f;
 
         // Reputation Status string
-        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "Rep. Status")]
+        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "Rep. Loss")]
         public string ReputationStatus = "";
 
         [KSPField(isPersistant = false)]
@@ -32,6 +32,10 @@ namespace GlowingReputation
                   if (fx.engineID == EngineID)
                     engineFX = fx;
                 }
+                if (engineFX == null)
+                {
+                    Utils.LogWarning(String.Format("Could not find ModuleEnginesFX with ID {0}", EngineID));
+                }
             }
         }
 
@@ -41,7 +45,7 @@ namespace GlowingReputation
         }
         public override string GetInfo()
         {
-            string outStr = String.Format("Running in sensitive environments damages reputation at a rate of {0}/s at maximum thrust", BaseReputationHit);
+            string outStr = String.Format("Running in sensitive environments damages reputation. \n\n<b>Max Rate</b>: {0:F2} Rep/s", BaseReputationHit);
 
             return outStr;
         }
@@ -53,12 +57,14 @@ namespace GlowingReputation
 
             if (engineFX != null )
             {
-              if (engineFX.EngineIgnited && engineFX.reqestedThrottle > 0f)
+               Debug.Log(Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude));
+               //Debug.Log(this.vessel.mainBody.bodyName);
+              if (engineFX.EngineIgnited && engineFX.requestedThrottle > 0f)
               {
                 LoseReputation();
               } else
               {
-                ReputationStatus = String.Format("Max Loss {0:F3}/s",Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude * BaseReputationHit));
+                ReputationStatus = String.Format("Max {0:F3}/s",Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit);
               }
 
 
@@ -74,8 +80,10 @@ namespace GlowingReputation
         {
             float repLoss = Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit *
               (engineFX.requestedMassFlow/engineFX.maxFuelFlow);
-              ReputationStatus = String.Format("Losing {0:F3}/s", repLoss);
-            Reputation.Instance.AddReputation(repLoss*TimeWarp.fixedDeltaTime, TransactionReasons.VesselLoss);
+            
+            ReputationStatus = String.Format("{0:F3}/s", repLoss);
+
+            Reputation.Instance.AddReputation(-repLoss*TimeWarp.fixedDeltaTime, TransactionReasons.None);
         }
 
 
