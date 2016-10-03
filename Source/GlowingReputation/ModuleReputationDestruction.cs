@@ -48,22 +48,25 @@ namespace GlowingReputation
         }
         public override string GetInfo()
         {
-            string outStr = String.Format("Destroying this part damages reputation. \n\n<b>Max loss</b>: {0:F2} Rep", BaseReputationHit);
+            string outStr = String.Format("Destroying this part damages reputation. \n\n<b>Max loss</b>: {0:F1} Rep", BaseReputationHit);
 
             return outStr;
         }
 
         public void Update()
         {
-            if (SafeUntilFirstActivation && !Unsafe)
+            if (HighLogic.LoadedSceneIsFlight)
             {
-                EvaluateSafety();
-            }
-            if (!SafeUntilFirstActivation || (SafeUntilFirstActivation && Unsafe))
-            {
-              float repScale = Utils.GetReputationScale(this.part.vessel.mainBody,
-                  Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
-                  ReputationStatus =  String.Format("{0:F2} when lost",repScale * BaseReputationHit);
+                if (SafeUntilFirstActivation && !Unsafe)
+                {
+                    EvaluateSafety();
+                }
+                if (!SafeUntilFirstActivation || (SafeUntilFirstActivation && Unsafe))
+                {
+                    float repScale = Utils.GetReputationScale(this.part.vessel.mainBody,
+                        Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
+                    ReputationStatus = String.Format("-{0:F1} when lost", repScale * BaseReputationHit);
+                }
             }
         }
 

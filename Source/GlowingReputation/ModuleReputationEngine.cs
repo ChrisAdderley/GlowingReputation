@@ -57,14 +57,14 @@ namespace GlowingReputation
 
             if (engineFX != null )
             {
-               Debug.Log(Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude));
+               //Debug.Log(Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude));
                //Debug.Log(this.vessel.mainBody.bodyName);
               if (engineFX.EngineIgnited && engineFX.requestedThrottle > 0f)
               {
                 LoseReputation();
               } else
               {
-                ReputationStatus = String.Format("Max {0:F3}/s",Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit);
+                ReputationStatus = String.Format("Max -{0:F3}/s",Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit);
               }
 
 
