@@ -40,8 +40,8 @@ namespace GlowingReputation
 
             if (enginesLegacy.Length > 0)
             {
-              if (RadioactivitySettings.debugModules)
-                Utils.Log("ReputationEngine: Using legacy engine module");
+             
+              Utils.Log("ReputationEngine: Using legacy engine module");
               useLegacyEngines = true;
               engineLegacy = enginesLegacy[0];
             } else
@@ -50,24 +50,24 @@ namespace GlowingReputation
               {
                   Utils.LogWarning("ReputationEngine: EngineID field not specified, trying to use default engine");
                   if (engines.Length > 0)
-                    engine = engines[0];
+                    engineLegacy = engines[0];
               }
               foreach (ModuleEnginesFX fx in engines)
               {
                 if (fx.engineID == EngineID)
                 {
-                  engine = fx;
+                  engineFX = fx;
                 }
               }
             }
             if (useLegacyEngines)
             {
               if (engineLegacy == null)
-                Utils.LogError("RadioactiveEngine: Couldn't find a legacy engine module");
+                Utils.LogError("ReputationEngine: Couldn't find a legacy engine module");
             } else
             {
-              if (engine == null)
-                Utils.LogError("RadioactiveEngine: Couldn't find a ModuleEnginesFX engine module");
+              if (engineFX == null)
+                Utils.LogError("ReputationEngine: Couldn't find a ModuleEnginesFX engine module");
             }
         }
 

@@ -80,7 +80,7 @@ namespace GlowingReputation
 
         protected void OnPartDestroyed(GameEvents.ExplosionReaction p)
         {
-            Utils.Debug.Log(SafeUntilFirstActivation);
+            Utils.Log(SafeUntilFirstActivation.ToString());
 
 
             if (SafeUntilFirstActivation && !Unsafe)
