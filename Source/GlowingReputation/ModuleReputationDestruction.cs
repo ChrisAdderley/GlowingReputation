@@ -20,7 +20,7 @@ namespace GlowingReputation
         public string ReputationStatus = "Safe";
 
         [KSPField(isPersistant = true)]
-        public bool Unsafe = true;
+        public bool HasBeenActivated = false;
 
         ModuleResourceConverter converter;
         ModuleEnginesFX[] engines;
@@ -29,11 +29,10 @@ namespace GlowingReputation
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-                if (!Unsafe && SafeUntilFirstActivation)
-                    Unsafe = false;
-                else
-                  Unsafe = true;
-
+                if (!SafeUntilFirstActivation)
+                {
+                  HasBeenActivated = true;
+                }
                 converter = this.GetComponent<ModuleResourceConverter>();
                 engines = this.GetComponents<ModuleEnginesFX>();
 
@@ -59,7 +58,7 @@ namespace GlowingReputation
             if (HighLogic.LoadedSceneIsFlight)
             {
 
-                if (SafeUntilFirstActivation && !Unsafe)
+                if (SafeUntilFirstActivation && !HasBeenActivated)
                 {
                     EvaluateSafety();
                 }
@@ -69,7 +68,7 @@ namespace GlowingReputation
                         Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
                     ReputationStatus = String.Format("-{0:F1} when lost", repScale * BaseReputationHit);
                 }
- 
+
             }
         }
 
@@ -83,9 +82,9 @@ namespace GlowingReputation
             Utils.Log(SafeUntilFirstActivation.ToString());
 
 
-            if (SafeUntilFirstActivation && !Unsafe)
+            if (SafeUntilFirstActivation && !HasBeenActivated)
             {
-              Utils.Log("ReputationDestruction: ParDestroyed but was still safe");
+              Utils.Log("ReputationDestruction: PartDestroyed but was still safe");
               return;
             }
 
@@ -106,8 +105,8 @@ namespace GlowingReputation
             {
               if (converter.ModuleIsActive())
               {
-                Unsafe = true;
-                Utils.Log("This part is now unsafe!");
+                HasBeenActivated = true;
+                Utils.Log("ReputationDestruction: This part is now unsafe!");
               }
             }
 
@@ -116,8 +115,8 @@ namespace GlowingReputation
             {
               if (engine.EngineIgnited)
               {
-                Unsafe = true;
-                Utils.Log("This part is now unsafe!");
+                HasBeenActivated = true;
+                Utils.Log("ReputationDestruction: This part is now unsafe!");
               }
             }
         }
