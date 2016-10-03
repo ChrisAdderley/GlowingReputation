@@ -36,6 +36,7 @@ namespace GlowingReputation
 
                 converter = this.GetComponent<ModuleResourceConverter>();
                 engines = this.GetComponents<ModuleEnginesFX>();
+
                 GameEvents.onPartExplode.Add(new EventData<GameEvents.ExplosionReaction>.OnEvent(OnPartDestroyed));
                 if (!Unsafe)
                   ReputationStatus = "Safe";
@@ -53,10 +54,11 @@ namespace GlowingReputation
             return outStr;
         }
 
-        public void Update()
+        public void FixedUpdate()
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
+
                 if (SafeUntilFirstActivation && !Unsafe)
                 {
                     EvaluateSafety();
@@ -67,6 +69,7 @@ namespace GlowingReputation
                         Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
                     ReputationStatus = String.Format("-{0:F1} when lost", repScale * BaseReputationHit);
                 }
+ 
             }
         }
 
@@ -77,17 +80,20 @@ namespace GlowingReputation
 
         protected void OnPartDestroyed(GameEvents.ExplosionReaction p)
         {
-            Debug.Log(SafeUntilFirstActivation);
-            Debug.Log(Unsafe);
+            Utils.Debug.Log(SafeUntilFirstActivation);
+
 
             if (SafeUntilFirstActivation && !Unsafe)
+            {
+              Utils.Log("ReputationDestruction: ParDestroyed but was still safe");
               return;
+            }
 
             float repScale = Utils.GetReputationScale(this.part.vessel.mainBody,
                 Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
             float repLoss =  repScale * BaseReputationHit;
 
-            Utils.Log(String.Format("Destruction resulted in a loss of {0} reputation, scaled from {1} by {2}%", repLoss, BaseReputationHit, repScale*100f));
+            Utils.Log(String.Format("ReputationDestruction: PartDestroyed resulted in a loss of {0} reputation, scaled from {1} by {2}%", repLoss, BaseReputationHit, repScale*100f));
 
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
                 Reputation.Instance.AddReputation(repLoss, TransactionReasons.VesselLoss);
@@ -102,7 +108,6 @@ namespace GlowingReputation
               {
                 Unsafe = true;
                 Utils.Log("This part is now unsafe!");
-
               }
             }
 

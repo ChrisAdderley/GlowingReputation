@@ -20,22 +20,54 @@ namespace GlowingReputation
         [KSPField(isPersistant = false)]
         public string EngineID;
 
+        protected bool useLegacyEngines = false;
+
         private ModuleEnginesFX engineFX;
+        private ModuleEngines engineLegacy;
 
         public void Start()
         {
             if (HighLogic.LoadedSceneIsFlight)
             {
-              // Get engines
-                foreach (ModuleEnginesFX fx in this.part.GetComponents<ModuleEnginesFX>())
+              SetupEngines();
+            }
+        }
+
+        void SetupEngines()
+        {
+            ModuleEngines[] enginesLegacy = this.GetComponents<ModuleEngines>();
+            ModuleEnginesFX[] engines = this.part.GetComponents<ModuleEnginesFX>();
+
+            if (enginesLegacy.Length > 0)
+            {
+              if (RadioactivitySettings.debugModules)
+                Utils.Log("ReputationEngine: Using legacy engine module");
+              useLegacyEngines = true;
+              engineLegacy = enginesLegacy[0];
+            } else
+            {
+              if (EngineID == "" || EngineID == String.Empty)
+              {
+                  Utils.LogWarning("ReputationEngine: EngineID field not specified, trying to use default engine");
+                  if (engines.Length > 0)
+                    engine = engines[0];
+              }
+              foreach (ModuleEnginesFX fx in engines)
+              {
+                if (fx.engineID == EngineID)
                 {
-                  if (fx.engineID == EngineID)
-                    engineFX = fx;
+                  engine = fx;
                 }
-                if (engineFX == null)
-                {
-                    Utils.LogWarning(String.Format("Could not find ModuleEnginesFX with ID {0}", EngineID));
-                }
+              }
+            }
+            if (useLegacyEngines)
+            {
+              if (engineLegacy == null)
+                Utils.LogError("RadioactiveEngine: Couldn't find a legacy engine module");
+            } else
+            {
+              if (engine == null)
+                Utils.LogError("RadioactiveEngine: Couldn't find a ModuleEnginesFX engine module");
             }
         }
 
@@ -46,7 +78,6 @@ namespace GlowingReputation
         public override string GetInfo()
         {
             string outStr = String.Format("Running in sensitive environments damages reputation. \n\n<b>Max Rate</b>: {0:F2} Rep/s", BaseReputationHit);
-
             return outStr;
         }
 
@@ -54,38 +85,51 @@ namespace GlowingReputation
         {
            if (HighLogic.LoadedSceneIsFlight)
            {
-
-            if (engineFX != null )
-            {
-               //Debug.Log(Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude));
-               //Debug.Log(this.vessel.mainBody.bodyName);
-              if (engineFX.EngineIgnited && engineFX.requestedThrottle > 0f)
-              {
-                LoseReputation();
-              } else
-              {
-                ReputationStatus = String.Format("Max -{0:F3}/s",Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit);
-              }
-
-
-
-
-            }
+           
+             if (useLegacyEngines)
+             {
+               if (engineLegacy.EngineIgnited && engineLegacy.requestedThrottle > 0f)
+               {
+                 LoseReputation();
+               }
+               else
+                {
+                  ReputationStatus = String.Format("Max -{0:F2}/s", Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit);
+                }
+             } else
+             {
+               if (engineFX.EngineIgnited && engineFX.requestedThrottle > 0f)
+               {
+                 LoseReputation();
+               }
+               else
+                {
+                  ReputationStatus = String.Format("Max -{0:F2}/s", Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit);
+                }
+             }
           }
         }
 
-
-
         protected void LoseReputation()
         {
-            float repLoss = Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit *
-              (engineFX.requestedMassFlow/engineFX.maxFuelFlow);
-            
-            ReputationStatus = String.Format("{0:F3}/s", repLoss);
+            float repLoss = Utils.GetReputationScale(this.vessel.mainBody, this.vessel.altitude) * BaseReputationHit * GetEngineScale();
+
+            ReputationStatus = String.Format("{0:F2}/s", repLoss);
+
             if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
                 Reputation.Instance.AddReputation(-repLoss*TimeWarp.fixedDeltaTime, TransactionReasons.None);
         }
 
+        protected float GetEngineScale()
+        {
+          if (useLegacyEngines)
+          {
+            return (engineLegacy.requestedMassFlow/engineLegacy.maxFuelFlow);
+          } else
+          {
+            return (engineFX.requestedMassFlow/engineFX.maxFuelFlow);
+          }
+        }
 
     }
 }
