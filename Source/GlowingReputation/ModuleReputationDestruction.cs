@@ -37,7 +37,7 @@ namespace GlowingReputation
                 engines = this.GetComponents<ModuleEnginesFX>();
 
                 GameEvents.onPartExplode.Add(new EventData<GameEvents.ExplosionReaction>.OnEvent(OnPartDestroyed));
-                if (!Unsafe)
+                if (SafeUntilFirstActivation && !HasBeenActivated)
                   ReputationStatus = "Safe";
             }
         }
@@ -48,7 +48,7 @@ namespace GlowingReputation
         }
         public override string GetInfo()
         {
-            string outStr = String.Format("Destroying this part damages reputation. \n\n<b>Max loss</b>: {0:F1} Rep", BaseReputationHit);
+            string outStr = String.Format("Destroying this part damages reputation. \n\n<b>Max loss</b>: {0:F1} Reputation", BaseReputationHit);
 
             return outStr;
         }
@@ -62,7 +62,7 @@ namespace GlowingReputation
                 {
                     EvaluateSafety();
                 }
-                if (!SafeUntilFirstActivation || (SafeUntilFirstActivation && Unsafe))
+                if (!SafeUntilFirstActivation || (SafeUntilFirstActivation && HasBeenActivated))
                 {
                     float repScale = Utils.GetReputationScale(this.part.vessel.mainBody,
                         Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
