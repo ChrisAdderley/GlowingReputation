@@ -10,12 +10,14 @@ namespace GlowingReputation
 
   public static class Utils
   {
+      public static string ModName = "GlowingReputation";
+
       public static float GetReputationScale(CelestialBody body, double altitude)
       {
           // if planet not in DB, no reputation penalty
           if (GlowingReputationSettings.ReputationData == null)
           {
-              Utils.LogWarning("Could not locate the reputation data");
+              Utils.LogWarning("Could not locate reputation data");
               return 0f;
           }
           else if(!GlowingReputationSettings.ReputationData.ContainsKey(body.bodyName))
@@ -89,7 +91,7 @@ namespace GlowingReputation
             for (int i = 0; i < nodes.Length; i++)
             {
                 string[] valueArray = nodes[i].GetValues("key");
-            
+
                 for (int l = 0; l < valueArray.Length; l++)
                 {
                     string[] splitString = valueArray[l].Split(' ');
@@ -106,15 +108,15 @@ namespace GlowingReputation
 
     public static void Log(string str)
     {
-        Debug.Log("GlowingReputation > " + str);
+        Debug.Log(String.Format("[{0}]: {1}", ModName, str));
     }
     public static void LogError(string str)
     {
-        Debug.LogError("GlowingReputationy > " + str);
+        Debug.LogError(String.Format("[{0}]: {1}", ModName, str));
     }
     public static void LogWarning(string str)
     {
-        Debug.LogWarning("GlowingReputation > " + str);
+        Debug.LogWarning(String.Format("[{0}]: {1}", ModName, str));
     }
 
 
