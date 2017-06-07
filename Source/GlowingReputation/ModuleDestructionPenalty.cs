@@ -4,16 +4,23 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
+using KSP.Localization;
 
 namespace GlowingReputation
 {
-    public class ModuleReputationDestruction:PartModule
+    public class ModuleDestructionPenalty:PartModule
     {
         [KSPField(isPersistant = false)]
         public bool SafeUntilFirstActivation = false;
 
         [KSPField(isPersistant = false)]
         public float BaseReputationHit = 15f;
+
+        [KSPField(isPersistant = false)]
+        public float BaseFundsHit = 0f;
+
+        [KSPField(isPersistant = false)]
+        public float BaseScienceHit = 0f;
 
         // Reputation Status string
         [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "Rep. Status")]
@@ -27,6 +34,8 @@ namespace GlowingReputation
 
         public void Start()
         {
+            //Fields["ReputationStatus"].guiName = Localizer.Format();
+
             if (HighLogic.LoadedSceneIsFlight)
             {
                 if (!SafeUntilFirstActivation)
@@ -44,11 +53,20 @@ namespace GlowingReputation
 
         public string GetModuleTitle()
         {
-            return "Reputation Damaging Part";
+            return Localizer.Format("#LOC_GlowingRepuation_ModulePenaltyDestruction_title");
         }
         public override string GetInfo()
         {
-            string outStr = String.Format("Destroying this part damages reputation. \n\n<b>Max loss</b>: {0:F1} Reputation", BaseReputationHit);
+            string outStr = Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description");
+            if (BaseReputationHit > 0.0f)
+              outStr += "\n ";
+              outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_rep", BaseReputationHit.ToString("F1"));
+            if (BaseFundsHit > 0.0f)
+              outStr += "\n ";
+              outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_science", BaseFundsHit.ToString("F1");
+            if (BaseScienceHit > 0.0f)
+              outStr += "\n ";
+              outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_funds", BaseScienceHit.ToString("F1");
 
             return outStr;
         }
@@ -64,9 +82,8 @@ namespace GlowingReputation
                 }
                 if (!SafeUntilFirstActivation || (SafeUntilFirstActivation && HasBeenActivated))
                 {
-                    float repScale = Utils.GetReputationScale(this.part.vessel.mainBody,
-                        Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
-                    ReputationStatus = String.Format("-{0:F1} when lost", repScale * BaseReputationHit);
+
+                    //ReputationStatus = String.Format("-{0:F1} when lost", repScale * BaseReputationHit);
                 }
 
             }
@@ -84,19 +101,35 @@ namespace GlowingReputation
 
             if (SafeUntilFirstActivation && !HasBeenActivated)
             {
-              Utils.Log("ReputationDestruction: PartDestroyed but was still safe");
+              Utils.Log(String.Format("[{0}]: PartDestroyed but was still safe", moduleName));
               return;
             }
 
-            float repScale = Utils.GetReputationScale(this.part.vessel.mainBody,
-                Vector3.Distance(this.part.vessel.mainBody.position, this.part.partTransform.position) - this.part.vessel.mainBody.Radius);
-            float repLoss =  repScale * BaseReputationHit;
+            float funds = 0f;
+            float rep = 0f;
+            float science = 0f;
 
-            Utils.Log(String.Format("ReputationDestruction: PartDestroyed resulted in a loss of {0} reputation, scaled from {1} by {2}%", repLoss, BaseReputationHit, repScale*100f));
+            if (BaseReputationHit > 0f)
+              rep = GlowingReputation.CalculateReputationLoss(vessel);
+            if (BaseFundsHit > 0f)
+              funds = GlowingReputation.CalculateFundsLoss(vessel);
+            if (BaseScienceHit > 0f)
+              science = GlowingReputation.CalculateScienceLoss(vessel);
 
-            if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
-                Reputation.Instance.AddReputation(repLoss, TransactionReasons.VesselLoss);
+            GlowingReputation.ApplyPenalties(rep * BaseReputationHit,
+                    funds * BaseFundsHit, science * BaseScienceHit);
+
+            Utils.Log(String.Format("[{0}]: Part Destroyed resulted in a loss of:
+               \n* {1} reputation, scaled from {2} by {3}%
+               \n* {4} funds, scaled from {5} by {6}%
+               \n* {7} science, scaled from {8} by {9}%",
+               moduleName,
+               rep*BaseReputationHit, BaseReputationHit, rep*100f,
+               funds*BaseFundsHit, BaseFundsHit, funds*100f,
+               science*BaseScienceHit, BaseScienceHit, science*100f));
         }
+
+
 
         protected void EvaluateSafety()
         {
@@ -106,7 +139,7 @@ namespace GlowingReputation
               if (converter.ModuleIsActive())
               {
                 HasBeenActivated = true;
-                Utils.Log("ReputationDestruction: This part is now unsafe!");
+                Utils.Log("[{0}]: {1} is now unsafe!", moduleName, part.partInfo.title);
               }
             }
 
@@ -116,7 +149,7 @@ namespace GlowingReputation
               if (engine.EngineIgnited)
               {
                 HasBeenActivated = true;
-                Utils.Log("ReputationDestruction: This part is now unsafe!");
+                Utils.Log("[{0}]: {1} is now unsafe!", moduleName, part.partInfo.title);
               }
             }
         }

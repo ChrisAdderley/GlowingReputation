@@ -12,25 +12,7 @@ namespace GlowingReputation
   {
       public static string ModName = "GlowingReputation";
 
-      public static float GetReputationScale(CelestialBody body, double altitude)
-      {
-          // if planet not in DB, no reputation penalty
-          if (GlowingReputationSettings.ReputationData == null)
-          {
-              Utils.LogWarning("Could not locate reputation data");
-              return 0f;
-          }
-          else if(!GlowingReputationSettings.ReputationData.ContainsKey(body.bodyName))
-          {
-              return 0f;
-          }
-          else
-          {
-              //Debug.Log("x");
-              return GlowingReputationSettings.ReputationData[body.bodyName].GetReputationScale(altitude);
-          }
-      }
-
+      
     // Node loading
       // several variants for data types
     public static string GetValue(ConfigNode node, string nodeID, string defaultValue)

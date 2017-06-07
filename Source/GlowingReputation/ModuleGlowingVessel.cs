@@ -12,7 +12,7 @@ namespace GlowingReputation
 
     public override void OnStart()
     {
-      GameEvents.onVesselDestroy(new EventData<Vessel>.OnEvent(OnVesselDestroyed));
+      GameEvents.onVesselDestroy.Add(new EventData<Vessel>.OnEvent(OnVesselDestroyed));
 
     }
     void OnDestroy()

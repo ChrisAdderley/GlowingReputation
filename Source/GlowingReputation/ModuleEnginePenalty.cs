@@ -40,7 +40,7 @@ namespace GlowingReputation
 
             if (enginesLegacy.Length > 0)
             {
-             
+
               Utils.Log("ReputationEngine: Using legacy engine module");
               useLegacyEngines = true;
               engineLegacy = enginesLegacy[0];
@@ -85,7 +85,7 @@ namespace GlowingReputation
         {
            if (HighLogic.LoadedSceneIsFlight)
            {
-           
+
              if (useLegacyEngines)
              {
                if (engineLegacy.EngineIgnited && engineLegacy.requestedThrottle > 0f)
