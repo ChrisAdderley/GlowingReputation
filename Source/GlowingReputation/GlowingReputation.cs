@@ -69,8 +69,14 @@ namespace GlowingReputation
 
     public static void DoPartDestroyed(Part part, float rep, float funds, float science)
     {
-      BuildPartDestroyedPenaltyMessage(part, rep, funds, science);
+      string message = BuildPartDestroyedPenaltyMessage(part, rep, funds, science);
+      ShowMessage(message);
       ApplyPenalties(rep, funds, science);
+    }
+
+    public static void ShowMessage(string msg)
+    {
+      
     }
 
     public static void ApplyPenalties(float rep, float funds, float science)
@@ -81,8 +87,6 @@ namespace GlowingReputation
           SubtractReputation(rep);
           SubtractFunds(funds);
           SubtractScience(science);
-
-
       } else if (HighLogic.CurrentGame.Mode == Game.Modes.SCIENCE_SANDBOX)
       {
         // Only do Science penalty
@@ -90,15 +94,24 @@ namespace GlowingReputation
       }
     }
 
-    public static void BuildPartDestroyedPenaltyMessage(Part part, float rep, float funds, float science)
+    public static string BuildPartDestroyedPenaltyMessage(Part part, float rep, float funds, float science)
     {
-      string msg = Localizer.Format("", part.partInfo.title);
+      string msg = Localizer.Format("#LOC_GlowingRepuation_Message_PartDestroyed_Base", part.partInfo.title);
+      if (rep > 0)
+      {
+        msg += Localizer.Format("LOC_GlowingRepuation_Message_PartDestroyed_Rep", rep.ToString("F1"));
+      }
+      if (funds > 0)
+      {
+        msg += Localizer.Format("LOC_GlowingRepuation_Message_PartDestroyed_Funds", funds.ToString("F1"));
+      }
+      if (science > 0)
+      {
+        msg += Localizer.Format("LOC_GlowingRepuation_Message_PartDestroyed_Science", science.ToString("F1"));
+      }
+      return msg;
     }
 
-    public static void ScienceSandboxPenaltyMessage()
-    {
-
-    }
 
     public static void SubtractFunds(float amt)
     {
