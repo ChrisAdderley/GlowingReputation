@@ -8,53 +8,54 @@ using UnityEngine;
 namespace GlowingReputation
 {
 
-    [KSPAddon(KSPAddon.Startup.MainMenu, false)]
-    public class GlowingReputation : MonoBehaviour
+  /// <summary>
+  /// KSPAddon to load settings and data for the mod
+  /// </summary>
+
+  [KSPAddon(KSPAddon.Startup.MainMenu, false)]
+  public class GlowingReputation : MonoBehaviour
+  {
+
+    public bool FirstLoad = true;
+
+    public static GlowingReputation Instance { get; private set; }
+
+    protected void Awake()
     {
-        public static GlowingReputation Instance { get; private set; }
-
-        protected void Awake()
-        {
-            Instance = this;
-        }
-        protected void Start()
-        {
-            GlowingReputationSettings.Load();
-        }
+      Instance = this;
     }
-
-    public static class GlowingReputationSettings
+    protected void Start()
     {
-
-        public static Dictionary<string, BodyPenaltyData> PenaltyData;
-
-        public static void Load()
-        {
-           ConfigNode settingsNode;
-           ReputationData = new Dictionary<string, BodyReputationData>();
-
-           Utils.Log("[Settings]: Started loading");
-           if (GameDatabase.Instance.ExistsConfigNode("GlowingReputation/GLOWINGREPUTATIONSETTINGS"))
-           {
-               Utils.Log("[Settings]: Located settings file");
-
-               settingsNode = GameDatabase.Instance.GetConfigNode("GlowingReputation/GLOWINGREPUTATIONSETTINGS");
-               ConfigNode[] repNodes = settingsNode.GetNodes("REPUTATIONBODY");
-
-               foreach (ConfigNode repNode in repNodes)
-               {
-                   BodyPenaltyData dat = new BodyPenaltyData(repNode);
-                   BodyPenaltyData.Add(dat.bodyName, dat);
-                   Utils.Log("[Settings]: Loaded data for " + dat.bodyName);
-               }
-           }
-           else
-           {
-               Utils.Log("[Settings]: Couldn't find settings file, using defaults");
-           }
-            Utils.Log("[Settings]: Finished loading");
+      GlowingReputationSettings.Load();
+      GlowingReputationData.Load();
     }
+  }
 
+  /// <summary>
+  /// Class to load and hold configurable settings
+  /// </summary>
+  public static class Settings
+  {
+    public bool DebugUIMode = true;
+    public bool DebugMode = true;
 
+    public float MultiplierWarningLevel = 0.0f;
+    public float DangerWarningLevel = 1.0f;
+
+    public static void Load()
+    {
+      ConfigNode settingsNode;
+      Utils.Log("[Settings]: Started loading");
+      if (GameDatabase.Instance.ExistsConfigNode("GlowingReputation/GlowingReputationSettings"))
+      {
+        Utils.Log("[Settings]: Located settings file");
+        settingsNode = GameDatabase.Instance.GetConfigNode("GlowingReputation/GLOWINGREPUTATIONSETTINGS");
+      }
+      else
+      {
+        Utils.Log("[Settings]: Couldn't find settings file, using defaults");
+      }
+      Utils.Log("[Settings]: Finished loading");
+    }
   }
 }
