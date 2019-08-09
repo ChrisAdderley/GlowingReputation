@@ -63,10 +63,10 @@ namespace GlowingReputation
       outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_rep", BaseReputationHit.ToString("F1"));
       if (BaseFundsHit > 0.0f)
         outStr += "\n ";
-      outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_science", BaseFundsHit.ToString("F1");
+      outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_science", BaseFundsHit.ToString("F1"));
       if (BaseScienceHit > 0.0f)
         outStr += "\n ";
-      outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_funds", BaseScienceHit.ToString("F1");
+      outStr += Localizer.Format("LOC_GlowingRepuation_ModulePenaltyDestruction_description_funds", BaseScienceHit.ToString("F1"));
 
       return outStr;
     }
@@ -75,14 +75,12 @@ namespace GlowingReputation
     {
       if (HighLogic.LoadedSceneIsFlight)
       {
-
         if (SafeUntilFirstActivation && !HasBeenActivated)
         {
           EvaluateSafety();
         }
         if (!SafeUntilFirstActivation || (SafeUntilFirstActivation && HasBeenActivated))
         {
-
           //ReputationStatus = String.Format("-{0:F1} when lost", repScale * BaseReputationHit);
         }
       }
@@ -96,7 +94,6 @@ namespace GlowingReputation
     protected void OnPartDestroyed(GameEvents.ExplosionReaction p)
     {
 
-      Utils.Log(SafeUntilFirstActivation.ToString());
       if (SafeUntilFirstActivation && !HasBeenActivated)
       {
         Utils.Log(String.Format("[{0}]: PartDestroyed while loaded but was still safe", moduleName));
@@ -111,10 +108,16 @@ namespace GlowingReputation
 
       effects.UpdateMultipliers(this.vessel);
 
-      Utils.Log(String.Format("[ModuleDestructionPenalty]: Vessel destroyed, preparing to apply resulting penalties: {0}", penalty.ToString());
+      Utils.Log(String.Format("[ModuleDestructionPenalty]: Vessel destroyed, preparing to apply resulting penalties: {0}", penalty.ToString()));
       effects.ApplyPenalties();
-      Utils.Log(String.Format("[ModuleDestructionPenalty]: Applied penalties: {0}", penalty.ToString());
+      Utils.Log(String.Format("[ModuleDestructionPenalty]: Applied penalties: {0}", penalty.ToString()));
+      string penaltyMsg = PenaltyHelpers.BuildPartDestroyedPenaltyMessage(this.part, effects);
+      
+      ScreenMessages.PostScreenMessage(
+        new ScreenMessage(String.Format("[KEPA]: {0}", penaltyMsg)), 3.0f, ScreenMessageStyle.UPPER_CENTER));
+
     }
+
 
     protected void EvaluateSafety()
     {
@@ -125,6 +128,8 @@ namespace GlowingReputation
         {
           HasBeenActivated = true;
           Utils.Log("[{0}]: {1} is now unsafe!", moduleName, part.partInfo.title);
+          ScreenMessages.PostScreenMessage(
+            new ScreenMessage(String.Format("[KEPA]: {0} has been activated and is now unsafe! Dispose of it carefully...", part.partInfo.title)), 3.0f, ScreenMessageStyle.UPPER_CENTER));
         }
       }
 
@@ -135,6 +140,8 @@ namespace GlowingReputation
         {
           HasBeenActivated = true;
           Utils.Log("[{0}]: {1} is now unsafe!", moduleName, part.partInfo.title);
+          ScreenMessages.PostScreenMessage(
+            new ScreenMessage(String.Format("[KEPA]: {0} has been activated and is now unsafe! Dispose of it carefully...", part.partInfo.title)), 3.0f, ScreenMessageStyle.UPPER_CENTER));
         }
       }
     }

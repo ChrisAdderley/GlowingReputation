@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace GlowingReputation
 {
-  public class ModuleEnginePenalty:PartModule
+  public class ModuleOperationPenalty: PartModule
   {
     // In rep/s at max thrust
     [KSPField(isPersistant = false)]
@@ -22,10 +22,7 @@ namespace GlowingReputation
     [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "Rep. Loss")]
     public string Status = "";
 
-    [KSPField(isPersistant = false)]
-    public string EngineID;
-
-    private ModuleEngines engine;
+    private List<ModuleEngines> validEngines;
 
     public void Start()
     {
@@ -38,40 +35,26 @@ namespace GlowingReputation
     void SetupEngines()
     {
       ModuleEngines[] engines = this.GetComponents<ModuleEngines>();
-
       if (engines.Length > 0)
-      {
-        if (EngineID == "" || EngineID == String.Empty)
-        {
-          Utils.LogWarning("[ModuleEnginePenalty]: EngineID field not specified, trying to use default engine");
-          if (engines.Length > 0)
-            engine = engines[0];
-        }
-        foreach (ModuleEnginesFX fx in engines)
-        {
-          if (fx.engineID == EngineID)
-            engine = fx;
-        }
-      }
-
-      if (engine == null)
+        validEngines = engine.ToList();
+      else
         Utils.LogError("[ModuleEnginePenalty]: Couldn't find an engine module");
     }
 
     public string GetModuleTitle()
     {
-      return "Dangerous Engine";
+      return Localizer.Format("#LOC_GlowingRepuation_ModulePenaltyOperation_title");
     }
 
     public override string GetInfo()
     {
-      string outStr = String.Format("Running in sensitive environments has negative consequences. \n\n");
-      if (BaseReputationLoss > 0f)
-        outStr += String.Format("<b>Reputation Loss</b>: {0:F2} Rep/s\n", BaseReputationLoss);
-      if (BaseFundsLoss > 0f)
-        outStr += String.Format("<b>Funds Loss</b>: {0:F2} Rep/s\n", BaseFundsLoss);
-      if (BaseScienceLoss > 0f)
-        outStr += String.Format("<b>Reputation Loss</b>: {0:F2} Rep/s\n", BaseScienceLoss);
+      string outStr = Localizer.Format("#LOC_GlowingRepuation_ModulePenaltyOperation_description");
+      if (BaseReputationHit > 0.0f)
+        outStr += Localizer.Format("#LOC_GlowingRepuation_ModulePenaltyOperation_description_rep", BaseReputationHit.ToString("F2"));
+      if (BaseFundsHit > 0.0f)
+        outStr += Localizer.Format("#LOC_GlowingRepuation_ModulePenaltyOperation_description_science", BaseFundsHit.ToString("F2"));
+      if (BaseScienceHit > 0.0f)
+        outStr += Localizer.Format("#LOC_GlowingRepuation_ModulePenaltyOperation_description_funds", BaseScienceHit.ToString("F2"));
       return outStr;
     }
 
@@ -85,21 +68,13 @@ namespace GlowingReputation
         }
         else
         {
-          Status = "";
-          if (BaseReputationLoss > 0f)
-            Status += String.Format("{0:F2} Rep/s\n", PenaltyHelpers.CalculateReputationLoss(this.vessel) * BaseReputationLoss);
-          if (BaseFundsLoss > 0f)
-            Status += String.Format("{0:F2} Funds/s\n", PenaltyHelpers.CalculateFundsLoss(this.vessel) * BaseFundsLoss);
-          if (BaseScienceLoss > 0f)
-            Status += String.Format("{0:F2} Science/s", PenaltyHelpers.CalculateScienceLoss(this.vessel) * BaseScienceLoss);
-
         }
       }
     }
 
     protected void LoseReputation()
     {
-      float engineScale =  GetEngineScale();
+      float engineScale = GetEngineScale();
 
       float sciLoss = PenaltyHelpers.CalculateScienceLoss(this.vessel) * BaseScienceLoss;
       float fundsLoss = PenaltyHelpers.CalculateScienceLoss(this.vessel) * BaseFundsLoss;

@@ -12,7 +12,7 @@ namespace GlowingReputation
   public class ModuleGlowingVessel: VesselModule
   {
 
-
+    bool hasDestructionModule = false;
     float currentFundsMultiplier = 0f;
     float currentScienceMultiplier = 0f;
     float currentReputationMultiplier = 0f;
@@ -20,6 +20,8 @@ namespace GlowingReputation
     public override void OnStart()
     {
       GameEvents.onVesselDestroy.Add(new EventData<Vessel>.OnEvent(OnVesselDestroyed));
+
+      hasDestructionModule = CheckModules();
     }
 
     void OnDestroy()
@@ -31,24 +33,41 @@ namespace GlowingReputation
     {
 
     }
+
+    /// <summary>
+    /// Checks for the presence of a destruction penalty module on the ship
+    /// </summary>
+    protected bool CheckModules()
+    {
+      for (int i=0; i < protoPart.Modules.Count ; i++)
+      {
+        if (protoPart.Modules[i].moduleName == "ModuleDestructionPenalty")
+        {
+          Utils.Log(String.Format("[ModuleGlowingVessel]: Detected ModuleDestructionPenalty on {0}", vessel.vesselName));
+          return true;
+        }
+      }
+      return false;
+    }
+
     /// <summary>
     /// Fired when a vessel is destroyed
     /// </summary>
     protected void OnVesselDestroyed()
     {
-      if (vessel.loaded)
+      if (hasDestructionModule && vessel.loaded)
       {
         // Handled by the partModule
-        Utils.Log("[ModuleGlowingVessel]: Vessel {0} was destroyed when loaded", vessel.vesselName);
-      } else
+        Utils.Log(String.Format("[ModuleGlowingVessel]: Vessel {0} was destroyed when loaded", vessel.vesselName));
+      } else if (hasDestructionModule && !vessel.loaded)
       {
-        Utils.Log("[ModuleGlowingVessel]: Vessel {0} was destroyed when not loaded", vessel.vesselName);
+        Utils.Log(String.Format("[ModuleGlowingVessel]: Vessel {0} was destroyed when not loaded", vessel.vesselName));
         VesselDestructionSequence();
       }
     }
 
     /// <summary>
-    /// Gets the scaling factor for a penalty type given an altitude above the body
+    /// Does the sequence of destruction: generates penalties if needed, updates the locational multipliers, applies the penalties
     /// </summary>
     protected void VesselDestructionSequence()
     {
@@ -59,15 +78,20 @@ namespace GlowingReputation
         GeneratePartPenalties(protoVessel.protoPartSnapshots[i], effects);
       }
       effects.UpdateMultipliers(vessel);
-      Utils.Log(String.Format("[ModuleGlowingVessel]: Unloaded vessel destroyed, preparing to apply resulting penalties: {0}", penalty.ToString());
+      Utils.Log(String.Format("[ModuleGlowingVessel]: Unloaded vessel destroyed, preparing to apply resulting penalties: {0}", penalty.ToString()));
       effects.ApplyPenalties();
-      Utils.Log(String.Format("[ModuleGlowingVessel]: Applied penalties: {0}", penalty.ToString());
+      Utils.Log(String.Format("[ModuleGlowingVessel]: Applied penalties: {0}", penalty.ToString()));
+
+      PenaltyHelpers
     }
 
+    /// <summary>
+    /// Generates the penalties for all the parts and modules to be destroyed and adds them to the PenaltyEffects
+    /// </summary>
     protected void GeneratePartPenalties(ProtoPartSnapshot protoPart, PenaltyEffects effects)
     {
 
-      for (int i=0 ;i < protoPart.Modules.Count ;i++)
+      for (int i=0; i < protoPart.Modules.Count ; i++)
       {
         if (protoPart.Modules[i].moduleName == "ModuleDestructionPenalty")
         {
@@ -76,10 +100,13 @@ namespace GlowingReputation
       }
 
     }
+    /// <summary>
+    /// Generates the penalties for a single module and adds them to the PenaltyEffects
+    /// </summary>
     protected void GeneratePartModulePenalties(ProtoPartModuleSnapshot protoModule, PenaltyEffects effects)
     {
-      bool safeUntilFirstActivation;
-      bool hasBeenActivated;
+      bool safeUntilFirstActivation = false;
+      bool hasBeenActivated = false;
       float baseReputationHit = -1f;
       float baseScienceHit = -1f;
       float baseFundsHit = -1f;
@@ -102,14 +129,6 @@ namespace GlowingReputation
         effects.AddFundsPenalty(baseFundsHit);
 
         Utils.Log(String.Format("[ModuleGlowingVessel]: Unloaded PartModule was Destroyed");
-      }
-    }
-
-    protected void SubtractReputation(float amt)
-    {
-      if (HighLogic.CurrentGame.Mode == Game.Modes.CAREER)
-      {
-        Reputation.Instance.AddReputation(amt, TransactionReasons.VesselLoss);
       }
     }
   }

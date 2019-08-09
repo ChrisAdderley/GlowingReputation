@@ -140,24 +140,55 @@ namespace GlowingReputation
     /// <summary>
     /// Builds a game message to describe what happened when something was lost
     /// </summary>
-    /// <param name="part">The part that was destroyed</param>
-    /// <param name="rep">The amount of rep to remove</param>
-    /// <param name="funds">The amount of rep to remove</param>
-    /// <param name="science">The amount of science to remove</param>
-    public static string BuildPartDestroyedPenaltyMessage(Part part, float rep, float funds, float science)
+    /// <param name="partName">The part that was destroyed</param>
+    /// <param name="effects">The penalty effects to apply</param>
+    public static string BuildPartDestroyedPenaltyMessage(string partName, PenaltyEffects effects)
     {
-      string msg = Localizer.Format("#LOC_GlowingRepuation_Message_PartDestroyed_Base", part.partInfo.title);
+      string msg = Localizer.Format("#LOC_GlowingRepuation_Message_PartDestroyed_Base", partName);
       if (rep > 0)
       {
-        msg += Localizer.Format("LOC_GlowingRepuation_Message_PartDestroyed_Rep", rep.ToString("F1"));
+        msg += Localizer.Format("#LOC_GlowingRepuation_Message_PartDestroyed_Rep", effects.ReputationPenalty.ToString("F1"));
       }
       if (funds > 0)
       {
-        msg += Localizer.Format("LOC_GlowingRepuation_Message_PartDestroyed_Funds", funds.ToString("F1"));
+        msg += Localizer.Format("#LOC_GlowingRepuation_Message_PartDestroyed_Funds", effects.FundsPenalty.ToString("F1"));
       }
       if (science > 0)
       {
-        msg += Localizer.Format("LOC_GlowingRepuation_Message_PartDestroyed_Science", science.ToString("F1"));
+        msg += Localizer.Format("#LOC_GlowingRepuation_Message_PartDestroyed_Science", effects.SciencePenalty.ToString("F1"));
+      }
+      return msg;
+    }
+
+    /// <summary>
+    /// Builds a game message to describe what happened when something was lost
+    /// </summary>
+    /// <param name="part">The Part that was destroyed</param>
+    /// <param name="effects">The penalty effects to apply</param>
+    public static string BuildPartDestroyedPenaltyMessage(Part part, PenaltyEffects effects)
+    {
+      return PenaltyHelpers.BuildPartDestroyedPenaltyMessage(part.partInfo.title, effects);
+    }
+
+    /// <summary>
+    /// Builds a game message to describe what happened when something was lost
+    /// </summary>
+    /// <param name="vessel">The vessel that was destroyed</param>
+    /// <param name="effects">The penalty effects to apply</param>
+    public static string BuildVesselDestroyedPenaltyMessage(Vessel vessel, PenaltyEffects effects)
+    {
+      string msg = Localizer.Format("#LOC_GlowingRepuation_Message_VesselDestroyed_Base", vessel.vesselName);
+      if (rep > 0)
+      {
+        msg += Localizer.Format("#LOC_GlowingRepuation_Message_VesselDestroyed_Rep", effects.ReputationPenalty.ToString("F1"));
+      }
+      if (funds > 0)
+      {
+        msg += Localizer.Format("#LOC_GlowingRepuation_Message_VesselDestroyed_Funds", effects.FundsPenalty.ToString("F1"));
+      }
+      if (science > 0)
+      {
+        msg += Localizer.Format("#LOC_GlowingRepuation_Message_VesselDestroyed_Science", effects.SciencePenalty.ToString("F1"));
       }
       return msg;
     }
@@ -190,65 +221,5 @@ namespace GlowingReputation
     }
 
   }
-  public class PenaltyEffects
-  {
-    float baseReputationHit  = 0f;
-    float baseScienceHit = 0f;
-    float baseFundsHit = 0f;
 
-    float currentFundsMultiplier = 1f;
-    float currentScienceMultiplier = 1f;
-    float currentReputationMultiplier = 1f;
-
-    public PenaltyEffects()
-    {
-
-    }
-
-    public void ToString()
-    {
-      return String.Format("- {0} Science (x{1})\n - {2} Reputation (x{3})\n - {4} Funds (x{5})", baseScienceHit, currentScienceMultiplier, baseReputationHit, currentReputationMultiplier, baseFundsHit, currentFundsMultiplier );
-    }
-    public void ApplyPenalties()
-    {
-      PenaltyHelpers.ApplyPenalties(currentReputationMultiplier*baseReputationHit, currentFundsMultiplier*baseFundsHit, currentScienceMultiplier*baseScienceHit);
-    }
-    public void UpdateMultipliers(Vessel v)
-    {
-      currentFundsMultiplier = PenaltyHelpers.CalculateReputationLoss(v);
-      currentScienceMultiplier  = PenaltyHelpers.CalculateReputationLoss(v);
-      currentReputationMultiplier = PenaltyHelpers.CalculateReputationLoss(v);
-    }
-    public void AddReputationPenalty(float amount)
-    {
-      baseReputationHit += amount;
-    }
-
-    public void AddSciencePenalty(float amount)
-    {
-      BaseScienceHit += amount;
-    }
-
-    public void AddRFundsPenalty(float amount)
-    {
-      baseFundsHit += amount;
-    }
-
-    public void AddPenalty(PenaltyType pType, float amount)
-    {
-      if (amount > 0f)
-      {
-        switch pType:
-          case PenaltyType.Science:
-            baseScienceHit += amount;
-            break;
-          case PenaltyType.Funds:
-            baseFundsHit += amount;
-            break;
-          case PenaltyType.Reputation:
-            baseReputationHit += amount;
-            break;
-      }
-    }
-  }
 }
